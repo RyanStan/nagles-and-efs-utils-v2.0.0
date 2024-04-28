@@ -14,12 +14,12 @@ $ pip install -e .
 ### Commands
 TLS mount with efs-proxy:
 ```
-sudo mount -t efs -o tls,az=us-east-1b fs-033c3bbf7dafaeb9a:/ efs-proxy
+sudo mount -t efs -o tls $FS_ID:/ efs-proxy
 ```
 
 TLS mount with stunnel:
 ```
-sudo mount -t efs -o stunnel,az=us-east-1b fs-033c3bbf7dafaeb9a:/ efs-stunnel
+sudo mount -t efs -o tls,stunnel $FS_ID:/ efs-stunnel
 ```
 
 Packet capture:

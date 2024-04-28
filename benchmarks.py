@@ -26,11 +26,11 @@ class LatenciesResultCsv:
 
     def __init__(self, csv_file):
         self.csv_file = open(csv_file, 'a')
-        fieldnames = ['mount_type', 'io_size', 'latency_us']
+        fieldnames = ['timestamp', 'mount_type', 'io_size', 'latency_us']
         self.csv_writer = csv.DictWriter(self.csv_file, fieldnames=fieldnames)
         self.csv_writer.writeheader()
 
-    def put_latencies(self, mount_type, io_size, latency_us):
+    def put_latencies(self, timestamp, mount_type, io_size, latency_us):
         """
         Records an entry into the output CSV file.
 
@@ -38,7 +38,7 @@ class LatenciesResultCsv:
         :param io_size: The size in bytes of the write.
         :param latency_us: The write latency in microseconds.
         """
-        self.csv_writer.writerow({'mount_type': mount_type, 'io_size': io_size, 'latency_us': latency_us})
+        self.csv_writer.writerow({'timestamp': timestamp, 'mount_type': mount_type, 'io_size': io_size, 'latency_us': latency_us})
 
     def __del__(self):
         if hasattr(self, 'csv_file') and not self.csv_file.closed:
@@ -56,7 +56,7 @@ def bench_write(mount_dir, io_size):
     temp_file.close()
     os.remove(temp_file.name)
 
-    return write_latency.microseconds
+    return write_latency.microseconds, start
 
 
 def main():
@@ -64,10 +64,10 @@ def main():
     logger.info("Starting write benchmarks")
     while True:
         for io_size in [1024, 9 * 1024]:
-            proxy_write = bench_write(PROXY_MOUNT_DIR, io_size)
-            stunnel_write = bench_write(STUNNEL_MOUNT_DIR, io_size)
-            output_csv.put_latencies(PROXY_MOUNT, io_size, proxy_write)
-            output_csv.put_latencies(STUNNEL_MOUNT, io_size, stunnel_write)
+            proxy_write, proxy_bench_ts = bench_write(PROXY_MOUNT_DIR, io_size)
+            stunnel_write, stunnel_bench_ts = bench_write(STUNNEL_MOUNT_DIR, io_size)
+            output_csv.put_latencies(proxy_bench_ts, PROXY_MOUNT, io_size, proxy_write)
+            output_csv.put_latencies(stunnel_bench_ts, STUNNEL_MOUNT, io_size, stunnel_write)
 
     
 if __name__ == "__main__":
